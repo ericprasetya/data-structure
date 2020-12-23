@@ -17,45 +17,6 @@ Node *createNode(const char *name) {
 }
 
 
-void pushHead(const char *name) {
-  Node *temp = createNode(name);
-
-  if(!head) { // linked list kosong
-    head = tail = temp;
-  } else { // >= 1 node
-    // Initial: NULL <-4 (head)-> <-8-> <-12-> <-14 (tail)-> NULL
-    temp->next = head;
-    head->prev = temp; // NULL <-10-> <-4 (head)-> <-8-> <-12-> <-14 (tail)-> NULL 
-    head = temp; // NULL <-10 (head)-> <-4-> <-8-> <-12-> <-14 (tail)-> NULL
-  }
-}
-void pushTail(const char *name) {
-  Node *temp = createNode(name);
-
-  if(!head) { // linked list kosong
-    head = tail = temp;
-  } else { // >= 1 node
-    // Initial: NULL <-18(head)-> <-24-> <-32-> <-28(tail)-> NULL
-    temp->prev = tail;
-    tail->next = temp; // NULL <-18(head)-> <-24-> <-32-> <-28(tail)-> <-10-> NULL
-    tail = temp; // NULL <-18(head)-> <-24-> <-32-> <-28-> <-10(tail)-> NULL
-  }
-}
-void popHead() {
-  if(!head) { // tidak ada node
-    return; 
-  } else if(head == tail) { // kasus 1 node
-    head = tail = NULL;
-    free(head);
-  } else { // kasus > 1 node
-    // Initial: NULL <-18(head)-> <-15-> <-28(tail)-> NULL
-    Node *temp = head->next; // NULL <-18(head)-> <-15(temp)-> <-28(tail)-> NULL
-    head->next = temp->prev = NULL; // N <-18(head)-> N || N <-15(temp)-> <-28(tail)-> N
-    head = NULL; // N <-N-> N || N <-15(temp)-> <-28(tail)-> N
-    free(head); // N <-15(temp)-> <-28(tail)-> N
-    head = temp; // N <-15(head)-> <-28(tail)-> N
-  }
-}
 void popTail() {
   if(!head) { // tidak ada node
     return; 
@@ -71,82 +32,107 @@ void popTail() {
     tail = temp; // N <-18(head)-> <-15(tail)-> N 
   }
 }
+void pushHead(const char *name) {
+  Node *temp = createNode(name);
+
+  if(!head) { // linked list kosong
+    head = tail = temp;
+  } else { // NULL <-4 (head)-> <-12-> <-14 (tail)-> NULL
+    temp->next = head; // Buat link antara head dan temp
+    head->prev = temp; // NULL <-10-> <-4 (head)-> <-12-> <-14 (tail)-> NULL 
+    head = temp; // NULL <-10 (head)-> <-4-> <-12-> <-14 (tail)-> NULL
+  }
+}
+void pushTail(const char *name) {
+  Node *temp = createNode(name);
+
+  if(!head) { // linked list kosong
+    head = tail = temp;
+  } else { // NULL <-18(head)-> <-28(tail)-> NULL
+    temp->prev = tail; // Buat link antara tail dan temp
+    tail->next = temp; // NULL <-18(head)-> <-28(tail)-> <-10-> NULL
+    tail = temp; // NULL <-18(head)-> <-28-> <-10(tail)-> NULL
+  }
+}
+void popHead() {
+  if(!head) { // tidak ada node
+    return; 
+  } else if(head == tail) { // kasus 1 node
+    free(head);
+    head = tail = NULL;
+  } else { // NULL <-18(head)-> <-15-> <-28(tail)-> NULL
+    Node *temp = head->next; // NULL <-18(head)-> <-15(temp)-> <-28(tail)-> NULL
+    head->next = temp->prev = NULL; // Putuskan hubungan head dan temp
+    free(head); // Buang memory lama dari head
+    head = temp; // Assign label head ke temp
+  }
+}
+
 void pushMid(const char *name) {
   Node *temp = createNode(name);
 
   if(!head) { // no data
     head = tail = temp;
-  } else if (strcmp(name, head->name) < 0) { // kasus insert di depan
-    pushHead(name);
-  } else if(strcmp(name, tail->name) > 0) { // kasus insert di belakang
-    pushTail(name);
-  } else { // kasus di tengah
-    // N <- Arif(head) -><- Cecep -> <- Fajar(tail) -> N
+  } else if (strcmp(name, head->name) < 0) {
+    pushHead(name); // kasus insert depan
+  } else if(strcmp(name, tail->name) > 0) { 
+    pushTail(name); // kasus insert belakang
+  } else {
     Node *curr = head; // N <- Arif(head, curr) -><- Cecep -> <- Fajar(tail) -> N
 
     while(strcmp(name, curr->name) > 0) {
-      curr = curr->next;
+      curr = curr->next; // curr maju sampai kondisi while tidak terpenuhi
     }
- 
-    // Initial: N <- Arif(head) -><- Cecep -><- Fajar(curr, tail) -> N
-    // Result: N <- Arif(head) -><- Cecep -><- Dodi(temp) -><- Fajar(curr, tail) -> N
     
-    // Initial: Dodi -><- Elvan -><- Garry(curr) -><- NULL
-    temp->prev = curr->prev;   
+    // Initial: Dodi -><- Elvan -><- Garry(curr)
+    temp->prev = curr->prev; // Fajar->prev = Garry->prev, Fajar->prev = Elvan
     //                Fajar(temp)
     //                /     
-    // Dodi -><- Elvan -><- Garry(curr) -><- NULL
+    // Dodi -><- Elvan -><- Garry(curr)
 
-    temp->next = curr;
+    temp->next = curr; // Fajar->next = Garry
     //                Fajar(temp)
-    //                /      
-    // Dodi -><- Elvan -><- Garry(curr) -><- NULL    
+    //                /      \
+    // Dodi -><- Elvan -><- Garry(curr)  
 
-    temp->prev->next = temp; // Elvan->next -> Fajar
+    temp->prev->next = temp; // Elvan->next = Fajar
     //                Fajar(temp)
-    //                //      
-    // Dodi -><- Elvan    <- Garry(curr) -><- NULL    
+    //                //      \
+    // Dodi -><- Elvan    <- Garry(curr)  
 
     curr->prev = temp; // Garry->prev = Fajar 
     //                Fajar(temp)
-    //                //      
-    // Dodi -><- Elvan       Garry(curr) -><- NULL  
+    //                //      \\
+    // Dodi -><- Elvan       Garry(curr)
   }
 }
 void popMid(const char *name) {
-  if(!head) { // no data
+  if(!head) {
     return;
-  } else if (strcmp(name, head->name) == 0) { // kasus nama di depan
-    popHead();
-  } else if(strcmp(name, tail->name) == 0) { // kasus nama di belakang
-    popTail();
-  } else { // kasus di tengah
-    // N <- Arif(head) -><- Cecep -> <- Fajar(tail) -> N
+  } else if (strcmp(name, head->name) == 0) { 
+    popHead(); // kasus nama di depan
+  } else if(strcmp(name, tail->name) == 0) { 
+    popTail(); // kasus nama di belakang
+  } else {
     Node *curr = head; // N <- Arif(head, curr) -><- Cecep -> <- Fajar(tail) -> N
 
-    // Initial: N <- Arif(head) -><- Cecep(curr) -><- Fajar(tail) -> N
-    // Result: N <- Arif(head) -><- Fajar(tail) -> N
-
-    // curr->next != NULL (artinya kita sudah di tail)
-    // curr != NULL (artinya kita satu node setelah tail)
-    // NOTE: Biasakan sebelum cek nilai node, cek dulu apakah nodenya ada
-    while(curr && strcmp(name, curr->name) != 0) {
+    while(strcmp(name, curr->name) != 0) {
+      if(!curr->next) { // kita sudah di tail dan node selanjutnya NULL
+        puts("Can't find the person!"); 
+        return;
+      }
       curr = curr->next; // traverse terus selama kondisi while terpenuhi
     }
-
-    if(!curr) { // kita sudah ada di node setelah tail
-      puts("Can't find the person!"); // artinya kita engga nemu nama yang dicari
-      return; // langsung return aja (engga jalanin code di bawah)
-    }
  
+    // Initial: N <- Arif(head) -><- Cecep(curr) -><- Fajar(tail) -> N
+    // Result: N <- Arif(head) -><- Fajar(tail) -> N
     curr->prev->next = curr->next; // Arif->next = Fajar
     curr->next->prev = curr->prev; // Fajar->prev = Arif
     curr->next = curr->prev = NULL; // cecep jadi jomblo
+    free(curr); // bebaskan memory yang sudah diassign untuk node curr
     curr = NULL; // remove value
-    free(curr);
   }
 }
-
 void printLinkedList() {
   Node *curr = head; // curr adalah index yang akan berjalan
   // 30 (head) -> 20 -> 15 -> 40 (tail) -> NULL
