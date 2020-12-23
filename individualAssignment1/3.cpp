@@ -24,18 +24,30 @@ void pushHead(int number){
   }
 }
 
-void printLinkedList(){
+void printLinkedList(int n){
   int count=0;
   struct Node *mid=head;
-  struct Node *prev=head;
-  while(head!=NULL){
-  	count++;
-	if(count%2==0)
+  struct Node *prev;
+  int stop=0;
+  if(n%2==0){
+  	stop =n/2-1;
+  }else if(n%2!=0){
+  stop = n/2;
+  	}
+  while(count<stop){
 	mid=mid->next; 
   	head=head->next;
+  	count++;
   }
-  if(mid!=NULL)
-  printf("The Middle Element is %d\n", mid->number);
+  if(mid!=NULL){
+  	if(n%2!=0){
+  	printf("The Middle Element is %d\n", mid->number);
+	  }else{
+	  	prev=mid->next;
+	  	printf("The Middle Element(s) are %d & %d\n", prev->number, mid->number);
+	  	printf("The Middle Element is %.2lf\n", (double)(prev->number+mid->number)/2.00);
+	  }
+  }
 }
 
 int main(){
@@ -47,8 +59,8 @@ int main(){
     scanf(" %d" , &a);
     pushHead(a);
   }
-  printLinkedList();
+  printLinkedList(data);
 
-printf("\n");
+//printf("\n");
 return 0;
 }
